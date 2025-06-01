@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Black Jack</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #141e30, #243b55);
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .cards {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      width: 60px;
+      height: 90px;
+      background: white;
+      color: black;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    button {
+      background: #f39c12;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #e67e22;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎰 Mini Black Jack</h1>
+
+  <h2>Vos cartes :</h2>
+  <div class="cards" id="player-cards"></div>
+  <p>Total : <span id="player-score">0</span></p>
+
+  <h2>Cartes de la banque :</h2>
+  <div class="cards" id="dealer-cards"></div>
+  <p>Total : <span id="dealer-score">0</span></p>
+
+  <button id="hit">Tirer une carte</button>
+  <button id="stand">Rester</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    const playerCards = document.getElementById('player-cards');
+    const dealerCards = document.getElementById('dealer-cards');
+    const playerScoreEl = document.getElementById('player-score');
+    const dealerScoreEl = document.getElementById('dealer-score');
+    const resultEl = document.getElementById('result');
+    const hitBtn = document.getElementById('hit');
+    const standBtn = document.getElementById('stand');
+
+    let playerHand = [];
+    let dealerHand = [];
+
+    function drawCard() {
+      const values = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; // 11 = As
+      const value = values[Math.floor(Math.random() * values.length)];
+      return value;
+    }
+
+    function calculateScore(hand) {
+      let total = hand.reduce((a, b) => a + b, 0);
+      let aces = hand.filter(v => v === 11).length;
+      while (total > 21 && aces > 0) {
+        total -= 10;
+        aces--;
+      }
+      return total;
+    }
+
+    function displayCards(container, hand) {
+      container.innerHTML = '';
+      hand.forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.textContent = card === 11 ? 'A' : card;
+        container.appendChild(div);
+      });
+    }
+
+    function updateScores() {
+      const playerScore = calculateScore(playerHand);
+      const dealerScore = calculateScore(dealerHand);
+      playerScoreEl.textContent = playerScore;
+      dealerScoreEl.textContent = dealerScore;
+    }
+
+    function endGame() {
+      hitBtn.disabled = true;
+      standBtn.disabled = true;
+
+      let dealerScore = calculateScore(dealerHand);
+      while (dealerScore < 17) {
+        dealerHand.push(drawCard());
+        dealerScore = calculateScore(dealerHand);
+      }
+
+      displayCards(dealerCards, dealerHand);
+      updateScores();
+
+      const playerScore = calculateScore(playerHand);
+
+      let result = '';
+      if (playerScore > 21) {
+        result = "Tu dépasses 21, tu perds 😞";
+      } else if (dealerScore > 21 || playerScore > dealerScore) {
+        result = "Tu gagnes 🎉";
+      } else if (playerScore === dealerScore) {
+        result = "Égalité 🤝";
+      } else {
+        result = "La banque gagne 💰";
+      }
+
+      resultEl.textContent = result;
+    }
+
+    function startGame() {
+      playerHand = [drawCard(), drawCard()];
+      dealerHand = [drawCard()];
+
+      displayCards(playerCards, playerHand);
+      displayCards(dealerCards, dealerHand);
+      updateScores();
+
+      resultEl.textContent = '';
+      hitBtn.disabled = false;
+      standBtn.disabled = false;
+    }
+
+    hitBtn.addEventListener('click', () => {
+      playerHand.push(drawCard());
+      displayCards(playerCards, playerHand);
+      updateScores();
+      if (calculateScore(playerHand) > 21) {
+        endGame();
+      }
+    });
+
+    standBtn.addEventListener('click', () => {
+      endGame();
+    });
+
+    startGame();
+  </script>
+</body>
+</html>
