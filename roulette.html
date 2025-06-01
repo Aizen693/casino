@@ -1,110 +1,144 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Roulette Casino</title>
-  <style>
-    body {
-      background: radial-gradient(circle at center, #1e1e2f, #000);
-      color: white;
-      text-align: center;
-      font-family: Arial, sans-serif;
-      padding: 40px;
-    }
-
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
-    }
-
-    .wheel {
-      width: 300px;
-      height: 300px;
-      margin: 0 auto 30px;
-      border: 10px solid #fff;
-      border-radius: 50%;
-      position: relative;
-      overflow: hidden;
-      animation: none;
-    }
-
-    .arrow {
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 30px solid red;
-      position: absolute;
-      top: -30px;
-      left: calc(50% - 20px);
-    }
-
-    .spin-btn {
-      background: #f39c12;
-      color: white;
-      border: none;
-      padding: 15px 30px;
-      font-size: 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-
-    .spin-btn:hover {
-      background: #e67e22;
-    }
-
-    #result {
-      font-size: 1.5em;
-      margin-top: 20px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(1440deg); } /* 4 tours */
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Roulette Casino Réaliste</title>
+<style>
+  body {
+    background: radial-gradient(circle at center, #1e1e2f, #000);
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 40px;
+  }
+  h1 {
+    margin-bottom: 20px;
+    font-size: 2.5em;
+  }
+  #roulette-container {
+    position: relative;
+    margin: 0 auto;
+    width: 400px;
+    height: 400px;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+  }
+  #spinBtn {
+    margin-top: 30px;
+    background: #f39c12;
+    border: none;
+    padding: 15px 40px;
+    color: white;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #spinBtn:hover:not(:disabled) {
+    background: #e67e22;
+  }
+  #result {
+    margin-top: 30px;
+    font-size: 1.8em;
+    font-weight: bold;
+  }
+  #pointer {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; 
+    height: 0; 
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 30px solid red;
+    z-index: 10;
+  }
+</style>
 </head>
 <body>
 
-  <h1>🎯 Roulette</h1>
-
-  <div class="wheel" id="wheel">
-    <div class="arrow"></div>
+  <h1>🎯 Roulette Casino Réaliste</h1>
+  <div id="roulette-container">
+    <div id="pointer"></div>
+    <canvas id="roulette" width="400" height="400"></canvas>
   </div>
-
-  <button class="spin-btn" onclick="spin()">Lancer la roue</button>
-
+  <button id="spinBtn">Lancer la roue</button>
   <div id="result"></div>
 
-  <script>
-    const resultEl = document.getElementById('result');
-    const wheel = document.getElementById('wheel');
+<script>
+  const canvas = document.getElementById('roulette');
+  const ctx = canvas.getContext('2d');
+  const spinBtn = document.getElementById('spinBtn');
+  const resultDiv = document.getElementById('result');
+  const width = canvas.width;
+  const height = canvas.height;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = 180;
+  const segments = 37;
 
-    const colors = {
-      green: [0],
-      red: [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],
-      black: [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35]
-    };
+  // Les numéros et leurs couleurs
+  const numbers = [
+    {num: 0, color: 'green'},
+    {num: 32, color: 'red'},
+    {num: 15, color: 'black'},
+    {num: 19, color: 'red'},
+    {num: 4, color: 'black'},
+    {num: 21, color: 'red'},
+    {num: 2, color: 'black'},
+    {num: 25, color: 'red'},
+    {num: 17, color: 'black'},
+    {num: 34, color: 'red'},
+    {num: 6, color: 'black'},
+    {num: 27, color: 'red'},
+    {num: 13, color: 'black'},
+    {num: 36, color: 'red'},
+    {num: 11, color: 'black'},
+    {num: 30, color: 'red'},
+    {num: 8, color: 'black'},
+    {num: 23, color: 'red'},
+    {num: 10, color: 'black'},
+    {num: 5, color: 'red'},
+    {num: 24, color: 'black'},
+    {num: 16, color: 'red'},
+    {num: 33, color: 'black'},
+    {num: 1, color: 'red'},
+    {num: 20, color: 'black'},
+    {num: 14, color: 'red'},
+    {num: 31, color: 'black'},
+    {num: 9, color: 'red'},
+    {num: 22, color: 'black'},
+    {num: 18, color: 'red'},
+    {num: 29, color: 'black'},
+    {num: 7, color: 'red'},
+    {num: 28, color: 'black'},
+    {num: 12, color: 'red'},
+    {num: 35, color: 'black'},
+    {num: 3, color: 'red'},
+    {num: 26, color: 'black'},
+  ];
 
-    function getColor(number) {
-      if (colors.green.includes(number)) return 'vert';
-      if (colors.red.includes(number)) return 'rouge';
-      return 'noir';
-    }
+  // Convertir en radians un angle en degrés
+  function degToRad(deg) {
+    return (deg * Math.PI) / 180;
+  }
 
-    function spin() {
-      wheel.style.animation = 'none';
-      void wheel.offsetWidth; // reset animation
-      wheel.style.animation = 'spin 2s ease-out';
+  // Dessiner la roue
+  function drawWheel(rotation) {
+    ctx.clearRect(0, 0, width, height);
 
-      const number = Math.floor(Math.random() * 37); // 0 à 36
-      const color = getColor(number);
+    const arc = 360 / segments;
 
-      setTimeout(() => {
-        resultEl.innerHTML = `🎉 Résultat : <strong>${number}</strong> (${color})`;
-      }, 2000);
-    }
-  </script>
-</body>
-</html>
+    for (let i = 0; i < segments; i++) {
+      const startAngle = degToRad(i * arc + rotation);
+      const endAngle = degToRad((i + 1) * arc + rotation);
+      const number = numbers[i];
+
+      // Couleur du se
+
+    
