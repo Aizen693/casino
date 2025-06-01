@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Casino Fun - Lancer de Dés</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
+
+    body {
+      background: linear-gradient(135deg, #2b5876, #4e4376);
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Montserrat', sans-serif;
+      color: #fff;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+    }
+
+    .balance {
+      font-size: 1.4rem;
+      margin-bottom: 2rem;
+    }
+
+    .dice-container {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .dice {
+      width: 100px;
+      height: 100px;
+      background: #fff;
+      border-radius: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3rem;
+      color: #333;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      user-select: none;
+      transition: transform 0.3s ease;
+    }
+
+    .rolling {
+      animation: shake 0.6s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translate(0,0) rotate(0deg);}
+      25% { transform: translate(5px, -5px) rotate(15deg);}
+      50% { transform: translate(-5px, 5px) rotate(-15deg);}
+      75% { transform: translate(5px, 5px) rotate(10deg);}
+    }
+
+    button {
+      background: #f39c12;
+      border: none;
+      border-radius: 25px;
+      padding: 15px 40px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #2b5876;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #e67e22;
+    }
+
+    .result-message {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+      min-height: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mini Casino Fun - Lancer de Dés</h1>
+  <div class="balance" id="balance">Balance : 1000 crédits</div>
+
+  <div>
+    <label for="bet">Mise :</label>
+    <input type="number" id="bet" min="1" max="1000" value="10" style="width:80px; font-size:1.1rem; padding:5px; margin-left:10px; border-radius:5px; border:none;" />
+  </div>
+
+  <div class="dice-container" style="margin-top: 20px;">
+    <div class="dice" id="dice1">🎲</div>
+    <div class="dice" id="dice2">🎲</div>
+  </div>
+
+  <button id="rollBtn">Lancer les dés</button>
+
+  <div class="result-message" id="result"></div>
+
+  <script>
+    const balanceEl = document.getElementById('balance');
+    const betInput = document.getElementById('bet');
+    const dice1 = document.getElementById('dice1');
+    const dice2 = document.getElementById('dice2');
+    const rollBtn = document.getElementById('rollBtn');
+    const resultEl = document.getElementById('result');
+
+    let balance = 1000;
+
+    function getRandomDiceFace() {
+      return Math.floor(Math.random() * 6) + 1;
+    }
+
+    function updateBalance(amount) {
+      balance += amount;
+      balanceEl.textContent = `Balance : ${balance} crédits`;
+    }
+
+    rollBtn.addEventListener('click', () => {
+      const bet = parseInt(betInput.value);
+      if (isNaN(bet) || bet <= 0) {
+        alert("Merci d'entrer une mise valide !");
+        return;
+      }
+      if (bet > balance) {
+        alert("Tu n'as pas assez de crédits pour cette mise !");
+        return;
+      }
+
+      dice1.classList.add('rolling');
+      dice2.classList.add('rolling');
+      rollBtn.disabled = true;
+      resultEl.textContent = 'Lancement...';
+
+      setTimeout(() => {
+        dice1.classList.remove('rolling');
+        dice2.classList.remove('rolling');
+
+        const face1 = getRandomDiceFace();
+        const face2 = getRandomDiceFace();
+
+        dice1.textContent = face1;
+        dice2.textContent = face2;
+
+        const total = face1 + face2;
+
+        if (total >= 7) {
+          const gain = bet;
+          updateBalance(gain);
+          resultEl.textContent = `Tu as obtenu ${total}. Bravo, tu gagnes ${gain} crédits ! 🎉`;
+        } else {
+          updateBalance(-bet);
+          resultEl.textContent = `Tu as obtenu ${total}. Dommage, tu perds ta mise. 😞`;
+        }
+
+        rollBtn.disabled = false;
+      }, 800);
+    });
+  </script>
+</body>
+</html>
